@@ -28,8 +28,12 @@ To run first copy the .sqlite in your smartphone to your computer. Then import .
 
 ### import_wardriving_pcap.py
 
-The file import_wardriving_pcap.py creates objects in Faraday according to the security settings of the networks found in a PCAP. Users will be able to see statistics in the Faraday Dashboard including how many networks are using wpa, wpa2, wep and open. It will create vulnerabilities for open and wep. If any of the PCAP files contain a 4way handshake it will also create a vuln with the keys as evidence.
+The file import_wardriving_pcap.py creates objects in Faraday according to the security settings of the networks found in a PCAP. 
+
+Users will be able to see statistics in the Faraday Dashboard including how many networks are using wpa, wpa2, wep and open. It will create vulnerabilities for open and wep. If any of the PCAP files contain a 4way handshake it will also create a vuln with the keys as evidence.
+
 Also, a vulnerability containing the top 10 probe requests found and an XLS file with the vendor frequency will be added.
+
 If you want to load wardriving statistics from a PCAP file to the eko_wardring workspace use the following command:
 
 ```
