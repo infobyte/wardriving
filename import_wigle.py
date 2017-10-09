@@ -23,6 +23,8 @@ from persistence.server import models
 from persistence.server.server import _save_to_couch
 from persistence.server.server_io_exceptions import ConflictInDatabase, CantCommunicateWithServerError, ResourceDoesNotExist
 from model.common import factory
+from math import radians, cos, sin, asin, sqrt
+
 
 factory.register(models.Host)
 factory.register(models.Vuln)
@@ -34,6 +36,26 @@ __prettyname__ = 'Import Wardriving PCAP'
 
 access_point_data = defaultdict(dict)
 created_objs = defaultdict(set)
+
+
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    try:
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    except ValueError:
+        return 9999
+    c = 2 * asin(sqrt(a))
+    r = 6371 # Radius of earth in kilometers. Use 3956 for miles
+    return c * r
 
 
 def save_objs(workspace_name):
@@ -117,15 +139,15 @@ def draw_map():
             'wpa2': 'green'
         }
         marker_outline = CircleMarker(coords, colors[access_point['encryption']], 18)
-        marker = CircleMarker(coords, '#0036FF', 12)
+        marker = CircleMarker(coords, colors[access_point['encryption']], 12)
 
         m.add_marker(marker_outline)
         m.add_marker(marker)
 
-    image = m.render(zoom=10)
+    image = m.render(zoom=15)
     temp_file = NamedTemporaryFile(suffix='.png')
     image.save(temp_file.name)
-    image.save('/Users/leonardolazzaro/workspace/faraday_codigo/test.png')
+    image.save('/home/lcubo/test1.png')
     return temp_file
 
 
@@ -306,7 +328,7 @@ def process_wigle_sqlite(workspace_name, wigle_filename):
     map_file.close()
 
 
-def main(workspace_name='', args=None, parser=None):
+def main(workspace='', args=None, parser=None):
 
     parser.add_argument('--dry-run', action='store_true', help='Do not touch the database. Only print the object ID')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output from the pcapfile library.')
@@ -315,10 +337,12 @@ def main(workspace_name='', args=None, parser=None):
     parsed_args = parser.parse_args(args)
 
     if not os.path.isfile(parsed_args.wigle_sqlite):
-        print("wigle sqlite file not found: " % parsed_args.wigle_sqlite)
+        print("wigle sqlite file not found: %s" % parsed_args.wigle_sqlite)
         return 2, None
 
-    process_wigle_sqlite(workspace_name, parsed_args.wigle_sqlite)
+    process_wigle_sqlite(workspace, parsed_args.wigle_sqlite)
 
     if not parsed_args.dry_run:
-        save_objs(workspace_name)
+        save_objs(workspace)
+
+    return 0, None
