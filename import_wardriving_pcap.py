@@ -229,7 +229,7 @@ def parse_wifi_pcaps(workspace_name, wifi_packets):
     return 0, None
 
 
-def main(workspace_name='', args=None, parser=None):
+def main(workspace='', args=None, parser=None):
 
     parser.add_argument('--dry-run', action='store_true', help='Do not touch the database. Only print the object ID')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output from the pcapfile library.')
@@ -237,7 +237,7 @@ def main(workspace_name='', args=None, parser=None):
     parsed_args = parser.parse_args(args)
 
     try:
-        from scapy.all import rdpcap
+        from scapy.all import PcapReader
     except ImportError:
         print('capfile not found, please install it to use this plugin.' \
               ' You can do install it by executing pip2 install scapy in a shell.')
@@ -247,9 +247,10 @@ def main(workspace_name='', args=None, parser=None):
         print("pcap file not found: " % parsed_args.pcap)
         return 2, None
 
-    wifi_pcaps = rdpcap(parsed_args.pcap)
-    workspace_name = parsed_args.workspace_name
-    parse_wifi_pcaps(workspace_name, wifi_pcaps)
+    wifi_pcaps = PcapReader(parsed_args.pcap)
+    parse_wifi_pcaps(workspace, wifi_pcaps)
 
     if not parsed_args.dry_run:
-        save_objs(workspace_name)
+        save_objs(workspace)
+
+    return 0, None

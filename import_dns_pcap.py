@@ -1,6 +1,8 @@
+import os
 from model.common import factory
 from persistence.server import models
-from scapy.all import *
+from scapy.all import DNSRR
+
 
 def get_domain_resolutions(cap):
     for packet in cap:
@@ -26,7 +28,7 @@ def main(workspace='', args=None, parser=None):
     parsed_args = parser.parse_args(args)
 
     try:
-        from scapy.all import rdpcap
+        from scapy.all import PcapReader
     except ImportError:
         print 'capfile not found, please install it to use this plugin.' \
               ' You can do install it by executing pip2 install scapy in a shell.'
@@ -36,7 +38,7 @@ def main(workspace='', args=None, parser=None):
         print "pcap file not found: " % parsed_args.pcap
         return 2, None
 
-    pcap = rdpcap(parsed_args.pcap)
+    pcap = PcapReader(parsed_args.pcap)
     for (domain, ip) in get_domain_resolutions(pcap):
         obj = factory.createModelObject(models.Host.class_signature, ip,
                                         workspace, parent_id=None)
